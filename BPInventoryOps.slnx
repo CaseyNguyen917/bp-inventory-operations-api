@@ -1,5 +1,11 @@
 <Solution>
   <Folder Name="/Docs/">
+    <File Path="../../../Downloads/bp-inventory-project-docs-api-design/docs/api-contract.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-api-design/docs/api-design-decisions.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-api-design/docs/api-examples.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-api-design/docs/dto-contracts.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-api-design/docs/endpoint-matrix.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-api-design/docs/http-conventions.md" />
     <File Path="../../../Downloads/bp-inventory-project-docs-phase4/docs/architecture-decisions.md" />
     <File Path="../../../Downloads/bp-inventory-project-docs-phase4/docs/architecture.md" />
     <File Path="../../../Downloads/bp-inventory-project-docs-phase4/docs/project-structure.md" />
