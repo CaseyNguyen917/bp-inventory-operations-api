@@ -10,6 +10,13 @@
     <File Path="../../../Downloads/bp-inventory-project-docs-phase4/docs/architecture.md" />
     <File Path="../../../Downloads/bp-inventory-project-docs-phase4/docs/project-structure.md" />
     <File Path="../../../Downloads/bp-inventory-project-docs-phase4/docs/request-lifecycle.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-security/docs/auth-api-contract.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-security/docs/authorization-matrix.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-security/docs/identity-user-model.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-security/docs/security-architecture.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-security/docs/security-configuration.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-security/docs/security-decisions.md" />
+    <File Path="../../../Downloads/bp-inventory-project-docs-security/docs/security-interview-notes.md" />
     <File Path="../../../Downloads/business-scope.md" />
     <File Path="../../../Downloads/data-dictionary.md" />
     <File Path="../../../Downloads/database-design.md" />
