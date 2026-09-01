@@ -1,3 +1,10 @@
 <Solution>
+  <Folder Name="/Docs/">
+    <File Path="../../../Downloads/business-scope.md" />
+    <File Path="../../../Downloads/requirements.md" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="BPInventoryOps.Api/BPInventoryOps.Api.csproj" />
 </Solution>
