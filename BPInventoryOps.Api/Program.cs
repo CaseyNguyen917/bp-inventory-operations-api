@@ -1,11 +1,33 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using BPInventoryOps.Api.Auth;
 using BPInventoryOps.Api.Data;
+using BPInventoryOps.Api.Enums;
+using BPInventoryOps.Api.Entities;
+using BPInventoryOps.Api.Exceptions;
+using BPInventoryOps.Api.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+        options.Filters.Add<ApiAntiforgeryFilter>())
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter<AdjustmentReason>(
+                namingPolicy: null,
+                allowIntegerValues: false)));
 builder.Services.AddOpenApi();
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+        context.ProblemDetails.Extensions.TryAdd(
+            "traceId",
+            context.HttpContext.TraceIdentifier);
+});
+builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 
 string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -18,6 +40,114 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+
+        options.Password.RequiredLength = 10;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireDigit = true;
+        options.Password.RequireNonAlphanumeric = true;
+
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = ".BPInventory.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = false;
+
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        ProblemDetails problemDetails = new()
+        {
+            Status = StatusCodes.Status401Unauthorized,
+            Title = "Authentication required",
+            Detail = "Authentication is required to access this resource.",
+            Instance = context.Request.Path
+        };
+        problemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+
+        return context.Response.WriteAsJsonAsync(
+            problemDetails,
+            (JsonSerializerOptions?)null,
+            "application/problem+json",
+            context.HttpContext.RequestAborted);
+    };
+
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        ProblemDetails problemDetails = new()
+        {
+            Status = StatusCodes.Status403Forbidden,
+            Title = "Access forbidden",
+            Detail = "The authenticated user is not permitted to access this resource.",
+            Instance = context.Request.Path
+        };
+        problemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+
+        return context.Response.WriteAsJsonAsync(
+            problemDetails,
+            (JsonSerializerOptions?)null,
+            "application/problem+json",
+            context.HttpContext.RequestAborted);
+    };
+});
+
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = TimeSpan.FromMinutes(5));
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        AuthorizationPolicies.EmployeeOrAbove,
+        policy => policy.RequireRole(
+            ApplicationRoles.Employee,
+            ApplicationRoles.Manager,
+            ApplicationRoles.Admin));
+    options.AddPolicy(
+        AuthorizationPolicies.ManagerOrAbove,
+        policy => policy.RequireRole(
+            ApplicationRoles.Manager,
+            ApplicationRoles.Admin));
+    options.AddPolicy(
+        AuthorizationPolicies.AdminOnly,
+        policy => policy.RequireRole(ApplicationRoles.Admin));
+});
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.Cookie.Name = ".BPInventory.Antiforgery";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>,
+    ApplicationClaimsPrincipalFactory>();
+
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IRestockService, RestockService>();
+builder.Services.AddScoped<IInventoryAdjustmentService, InventoryAdjustmentService>();
+builder.Services.AddScoped<IUserAdministrationService, UserAdministrationService>();
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -29,6 +159,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
