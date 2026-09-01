@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/Docs/">
     <File Path="../../../Downloads/business-scope.md" />
+    <File Path="../../../Downloads/data-dictionary.md" />
+    <File Path="../../../Downloads/database-design.md" />
+    <File Path="../../../Downloads/er-diagram.md" />
     <File Path="../../../Downloads/requirements.md" />
   </Folder>
   <Folder Name="/Solution Items/">
