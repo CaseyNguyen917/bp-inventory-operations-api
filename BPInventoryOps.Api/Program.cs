@@ -2,13 +2,17 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using BPInventoryOps.Api.Auth;
 using BPInventoryOps.Api.Data;
+using BPInventoryOps.Api.Data.Seed;
 using BPInventoryOps.Api.Enums;
 using BPInventoryOps.Api.Entities;
 using BPInventoryOps.Api.Exceptions;
+using BPInventoryOps.Api.Health;
 using BPInventoryOps.Api.Services;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,17 +32,28 @@ builder.Services.AddProblemDetails(options =>
             context.HttpContext.TraceIdentifier);
 });
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>(
+        "sql-server",
+        failureStatus: HealthStatus.Unhealthy,
+        tags: ["ready"]);
+builder.Services.Configure<SeedDataOptions>(
+    builder.Configuration.GetSection(SeedDataOptions.SectionName));
 
-string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-if (string.IsNullOrWhiteSpace(connectionString))
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
 {
-    throw new InvalidOperationException(
-        "Connection string 'DefaultConnection' was not found.");
-}
+    string? connectionString = serviceProvider
+        .GetRequiredService<IConfiguration>()
+        .GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException(
+            "Connection string 'DefaultConnection' was not found.");
+    }
+
+    options.UseSqlServer(connectionString);
+});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
@@ -147,8 +162,16 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IRestockService, RestockService>();
 builder.Services.AddScoped<IInventoryAdjustmentService, InventoryAdjustmentService>();
 builder.Services.AddScoped<IUserAdministrationService, UserAdministrationService>();
+builder.Services.AddScoped<DatabaseSeeder>();
 
 var app = builder.Build();
+
+await using (AsyncServiceScope scope = app.Services.CreateAsyncScope())
+{
+    await scope.ServiceProvider
+        .GetRequiredService<DatabaseSeeder>()
+        .SeedAsync(app.Lifetime.ApplicationStopping);
+}
 
 app.UseExceptionHandler();
 
@@ -164,4 +187,18 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    Predicate = _ => false,
+    ResponseWriter = HealthCheckResponseWriter.WriteAsync
+}).AllowAnonymous();
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("ready"),
+    ResponseWriter = HealthCheckResponseWriter.WriteAsync
+}).AllowAnonymous();
+
 app.Run();
+
+public partial class Program;

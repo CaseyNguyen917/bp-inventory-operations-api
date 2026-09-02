@@ -27,4 +27,5 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="BPInventoryOps.Api/BPInventoryOps.Api.csproj" />
+  <Project Path="tests/BPInventoryOps.Api.Tests/BPInventoryOps.Api.Tests.csproj" />
 </Solution>

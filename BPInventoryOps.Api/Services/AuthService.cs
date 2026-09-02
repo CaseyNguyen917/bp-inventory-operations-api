@@ -12,7 +12,8 @@ public sealed class AuthService(
     SignInManager<ApplicationUser> signInManager,
     ICurrentUserContext currentUserContext,
     IAuditService auditService,
-    ApplicationDbContext dbContext) : IAuthService
+    ApplicationDbContext dbContext,
+    ILogger<AuthService> logger) : IAuthService
 {
     public async Task<CurrentUserResponse> LoginAsync(
         LoginRequest request,
@@ -36,6 +37,13 @@ public sealed class AuthService(
 
         if (!result.Succeeded)
         {
+            if (result.IsLockedOut)
+            {
+                logger.LogWarning(
+                    "Login rejected because user {UserId} is locked out",
+                    user.Id);
+            }
+
             throw new AuthenticationFailedException();
         }
 
@@ -46,6 +54,8 @@ public sealed class AuthService(
             await signInManager.SignOutAsync();
             throw new AuthenticationFailedException();
         }
+
+        logger.LogInformation("User {UserId} signed in", user.Id);
 
         return ToCurrentUserResponse(user, roles[0]);
     }
@@ -71,9 +81,11 @@ public sealed class AuthService(
         return ToCurrentUserResponse(user, roles[0]);
     }
 
-    public Task LogoutAsync()
+    public async Task LogoutAsync()
     {
-        return signInManager.SignOutAsync();
+        string userId = currentUserContext.UserId;
+        await signInManager.SignOutAsync();
+        logger.LogInformation("User {UserId} signed out", userId);
     }
 
     public async Task ChangePasswordAsync(
@@ -106,6 +118,8 @@ public sealed class AuthService(
             null);
 
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("User {UserId} changed their password", user.Id);
     }
 
     private async Task<IReadOnlyList<string>> GetSingleBusinessRoleAsync(ApplicationUser user)
