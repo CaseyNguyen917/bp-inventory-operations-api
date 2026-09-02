@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using BPInventoryOps.Api.Auth;
 using BPInventoryOps.Api.Data;
 using BPInventoryOps.Api.Data.Seed;
@@ -15,6 +16,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
+
+string? applicationInsightsConnectionString =
+    builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+
+if (!string.IsNullOrWhiteSpace(applicationInsightsConnectionString))
+{
+    builder.Services
+        .AddOpenTelemetry()
+        .UseAzureMonitor(options =>
+            options.ConnectionString = applicationInsightsConnectionString);
+}
 
 builder.Services.AddControllers(options =>
         options.Filters.Add<ApiAntiforgeryFilter>())

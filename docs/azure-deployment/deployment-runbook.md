@@ -2,6 +2,9 @@
 
 This is the planned deployment sequence. Exact Azure Portal labels may change over time.
 
+The completed Phase 5 deployment and its verification evidence are recorded in
+[`phase-5-deployment-record.md`](phase-5-deployment-record.md).
+
 ## Phase A — Pre-deployment
 
 1. `dotnet test` passes.

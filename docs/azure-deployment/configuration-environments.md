@@ -102,9 +102,9 @@ Example secret keys:
 
 ```text
 ConnectionStrings:DefaultConnection
-SeedData:AdminPassword
-SeedData:ManagerPassword
-SeedData:EmployeePassword
+SeedData:DemoEmployeePassword
+SeedData:DemoManagerPassword
+SeedData:DemoAdminPassword
 ```
 
 ---
@@ -140,8 +140,9 @@ Example environment-variable names:
 ```text
 ConnectionStrings__DefaultConnection
 SeedData__Enabled
-SeedData__AdminEmail
-SeedData__AdminPassword
+SeedData__DemoEmployeePassword
+SeedData__DemoManagerPassword
+SeedData__DemoAdminPassword
 APPLICATIONINSIGHTS_CONNECTION_STRING
 ```
 
@@ -173,6 +174,11 @@ Production framework behavior should remain Production behavior:
 - HTTPS/security behavior
 
 Demo data is a business/deployment concern, not a hosting environment.
+
+The current seeder validates all three configured demo passwords whenever
+`SeedData__Enabled=true`, including after the users already exist. Keep those
+settings present while demo seeding remains enabled, or disable the seed flag
+after deciding that startup should no longer run the idempotent seeder.
 
 ---
 
