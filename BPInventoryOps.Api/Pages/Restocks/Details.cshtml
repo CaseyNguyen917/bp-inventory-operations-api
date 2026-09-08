@@ -1,0 +1,7 @@
+@page "{id:int}"
+@model BPInventoryOps.Api.Pages.Restocks.DetailsModel
+@{ ViewData["Title"] = $"Delivery #{Model.Item.Id}"; var item = Model.Item; }
+<div class="page-heading"><div><p class="eyebrow">Delivery record</p><h1>@ViewData["Title"]</h1><p>@item.Vendor.Name · @item.ReceivedAtUtc.ToString("dd MMM yyyy, HH:mm") UTC</p></div><a asp-page="Index">All deliveries</a></div>
+<div class="panel"><div class="panel-body detail-grid"><div><small>Recorded by</small><strong>@item.RecordedBy.DisplayName</strong></div><div><small>Recorded at (UTC)</small><strong>@item.CreatedAtUtc.ToString("dd MMM yyyy, HH:mm")</strong></div><div><small>Total units received</small><strong>@item.Items.Sum(x => (long)x.QuantityReceived)</strong></div></div>
+<div class="table-wrap"><table><thead><tr><th>Product</th><th>SKU</th><th class="number">Units received</th></tr></thead><tbody>@foreach(var line in item.Items){<tr><td><a asp-page="/Products/Details" asp-route-id="@line.Product.Id">@line.Product.Name</a></td><td>@line.Product.Sku</td><td class="number">+@line.QuantityReceived</td></tr>}</tbody></table></div>
+<div class="panel-body"><h2>Notes</h2><p class="notes">@(item.Notes ?? "No notes recorded.")</p><p class="muted">This is a permanent historical record. Use a separate adjustment to correct stock.</p></div></div>

@@ -1,0 +1,9 @@
+@page
+@model BPInventoryOps.Api.Pages.Categories.IndexModel
+@{ ViewData["Title"] = "Categories"; var manage = User.IsInRole(ApplicationRoles.Manager) || User.IsInRole(ApplicationRoles.Admin); }
+<div class="page-heading"><div><p class="eyebrow">Catalog</p><h1>Categories</h1><p>Organize products into a clear, consistent catalog.</p></div>@if(manage){<a class="button" asp-page="Edit">Add category</a>}</div>
+<form method="get" class="panel filters"><div class="field wide"><label asp-for="Query.Search">Search</label><input asp-for="Query.Search" /></div><div class="field"><label asp-for="Query.SortDirection">Name order</label><select asp-for="Query.SortDirection"><option value="asc">A–Z</option><option value="desc">Z–A</option></select></div><label class="checkbox"><input asp-for="Query.IncludeInactive" /> Include inactive</label><button class="button" type="submit">Apply</button><a asp-page="Index">Reset</a></form>
+<div class="panel table-wrap"><table><thead><tr><th>Name</th><th>Status</th>@if(manage){<th>Manage</th>}</tr></thead><tbody>
+@foreach(var item in Model.Data.Items){<tr><td>@item.Name</td><td><span class="badge @(item.IsActive ? "" : "inactive")">@(item.IsActive ? "Active" : "Inactive")</span></td>@if(manage){<td><a asp-page="Edit" asp-route-id="@item.Id">Edit<span class="visually-hidden"> @item.Name</span></a></td>}</tr>}
+</tbody></table>@if(Model.Data.TotalCount==0){<div class="empty-state"><h2>No categories found</h2><p>Try a different search or include inactive records.</p></div>}
+<partial name="_Pagination" model="new Pagination(Model.Data.Page, Model.Data.TotalPages, Model.Data.TotalCount)" /></div>

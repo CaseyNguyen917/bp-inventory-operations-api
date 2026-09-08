@@ -1,0 +1,5 @@
+@page "{id:int}"
+@model BPInventoryOps.Api.Pages.Adjustments.DetailsModel
+@{ ViewData["Title"] = $"Adjustment #{Model.Item.Id}"; var item = Model.Item; }
+<div class="page-heading"><div><p class="eyebrow">Inventory history</p><h1>@ViewData["Title"]</h1><p>@item.RecordedAtUtc.ToString("dd MMM yyyy, HH:mm") UTC</p></div><a asp-page="Index">All adjustments</a></div>
+<div class="panel panel-body"><div class="detail-grid"><div><small>Product</small><a asp-page="/Products/Details" asp-route-id="@item.Product.Id">@item.Product.Name</a></div><div><small>Quantity change</small><strong>@item.QuantityChange.ToString("+0;-0;0")</strong></div><div><small>Reason</small><strong>@item.Reason</strong></div><div><small>Recorded by</small><strong>@item.RecordedBy.DisplayName</strong></div></div><h2>Notes</h2><p class="notes">@(item.Notes ?? "No notes recorded.")</p><p class="muted">This is a permanent historical record. Corrections require a separate adjustment.</p></div>

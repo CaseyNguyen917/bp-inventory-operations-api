@@ -1,0 +1,15 @@
+@page
+@model BPInventoryOps.Api.Pages.Audit.IndexModel
+@{ ViewData["Title"] = "Audit history"; }
+<div class="page-heading"><div><p class="eyebrow">Accountability</p><h1>Audit history</h1><p>Who changed what, and when. Read-only records, newest first.</p></div></div>
+<form method="get" class="panel filters">
+<div class="field"><label asp-for="Query.Action">Action (exact name)</label><input asp-for="Query.Action" placeholder="e.g. RestockRecorded" /></div>
+<div class="field"><label asp-for="Query.EntityType">Entity type</label><input asp-for="Query.EntityType" placeholder="e.g. Product" /></div>
+<div class="field"><label asp-for="Query.EntityId">Entity ID</label><input asp-for="Query.EntityId" /></div>
+<div class="field"><label asp-for="Query.UserId">Actor user ID</label><input asp-for="Query.UserId" /></div>
+<div class="field"><label asp-for="Query.FromUtc">From (UTC)</label><input asp-for="Query.FromUtc" type="datetime-local" /></div>
+<div class="field"><label asp-for="Query.ToUtc">Through (UTC)</label><input asp-for="Query.ToUtc" type="datetime-local" /></div><button class="button">Apply</button><a asp-page="Index">Reset</a></form>
+<div class="panel table-wrap"><table><thead><tr><th>Record</th><th>Action</th><th>Actor</th><th>Entity</th><th>Time (UTC)</th></tr></thead><tbody>
+@foreach(var item in Model.Data.Items){<tr><td><a asp-page="Details" asp-route-id="@item.Id">#@item.Id</a></td><td>@item.Action</td><td>@(item.User?.DisplayName ?? "System")</td><td>@item.EntityType @item.EntityId</td><td>@item.TimestampUtc.ToString("dd MMM yyyy, HH:mm")</td></tr>}
+</tbody></table>@if(Model.Data.Items.Count==0){<div class="empty-state"><h2>No matching audit records</h2><p>Clear your filters to see all activity.</p></div>}
+<partial name="_Pagination" model="new Pagination(Model.Data.Page, Model.Data.TotalPages, Model.Data.TotalCount)" /></div>

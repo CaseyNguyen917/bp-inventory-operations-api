@@ -1,0 +1,21 @@
+@page "{id:int?}"
+@model BPInventoryOps.Api.Pages.Products.EditModel
+@{ ViewData["Title"] = Model.Existing is null ? "Add product" : "Edit product"; }
+<div class="page-heading"><div><p class="eyebrow">Catalog management</p><h1>@ViewData["Title"]</h1><p>New products start at zero stock. Use deliveries or adjustments to change quantities.</p></div></div>
+<div class="panel form-panel"><form method="post" class="panel-body">
+<div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+<div class="form-grid"><div class="field"><label asp-for="Input.Name">Name</label><input asp-for="Input.Name"  required /></div>
+<div class="field"><label asp-for="Input.Sku">SKU</label><input asp-for="Input.Sku"  required /></div>
+<div class="field"><label asp-for="Input.CategoryId">Category</label><select asp-for="Input.CategoryId" asp-items="Model.Categories" required><option value="">Choose an active category</option></select></div>
+<div class="field"><label asp-for="Input.PrimaryVendorId">Primary vendor</label><select asp-for="Input.PrimaryVendorId" asp-items="Model.Vendors" required><option value="">Choose an active vendor</option></select></div>
+<div class="field"><label asp-for="Input.ReorderThreshold">Reorder threshold</label><input asp-for="Input.ReorderThreshold" type="number" min="0" step="1"  /></div>
+<div class="field"><label asp-for="Input.Cost">Cost</label><input asp-for="Input.Cost" type="number" min="0" step="0.01"  /></div>
+<div class="field"><label asp-for="Input.RetailPrice">Retail price</label><input asp-for="Input.RetailPrice" type="number" min="0" step="0.01"  /></div></div>
+<div class="form-actions"><button class="button" type="submit">Save product</button><a class="button secondary" asp-page="/Products/Index">Cancel</a></div>
+</form></div>
+@if (Model.Existing is { } existing)
+{
+    <section class="panel status-panel"><div><h2>@(existing.IsActive ? "Deactivate product" : "Reactivate product")</h2><p>History is always preserved. Reactivation requires an active category and primary vendor.</p></div>
+    <form method="post" asp-page-handler="@(existing.IsActive ? "Deactivate" : "Reactivate")" asp-route-id="@existing.Id" data-confirm="Change this product's active status?"><button class="button @(existing.IsActive ? "danger" : "secondary")" type="submit">@(existing.IsActive ? "Deactivate" : "Reactivate")</button></form></section>
+}
+

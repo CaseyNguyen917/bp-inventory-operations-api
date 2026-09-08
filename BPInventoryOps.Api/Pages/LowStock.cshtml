@@ -1,0 +1,16 @@
+@page
+@model BPInventoryOps.Api.Pages.LowStockModel
+@{ ViewData["Title"] = "Low stock"; }
+<div class="page-heading"><div><p class="eyebrow">REPLENISHMENT</p><h1>Low stock</h1><p>Active products at or below their reorder threshold.</p></div><a class="button" asp-page="/Restocks/Create">Record a restock</a></div>
+<form method="get" class="filters">
+<div class="field"><label asp-for="Query.CategoryId">Category</label><select asp-for="Query.CategoryId" asp-items="Model.Categories"><option value="">All categories</option></select></div>
+<div class="field"><label asp-for="Query.VendorId">Vendor</label><select asp-for="Query.VendorId" asp-items="Model.Vendors"><option value="">All vendors</option></select></div>
+<div class="field"><label asp-for="Query.SortBy">Sort by</label><select asp-for="Query.SortBy"><option value="quantityOnHand">On hand</option><option value="name">Name</option><option value="sku">SKU</option><option value="retailPrice">Price</option></select></div>
+<div class="field"><label asp-for="Query.SortDirection">Order</label><select asp-for="Query.SortDirection"><option value="asc">Ascending</option><option value="desc">Descending</option></select></div>
+<button class="button">Apply</button><a asp-page="/LowStock">Reset</a></form>
+<div class="panel">
+@if (Model.Data.Items.Count == 0) { <div class="empty-state"><h2>Nothing needs restocking here.</h2><p>Products matching these filters are above their thresholds, or the catalog is empty.</p></div> }
+else { <div class="table-wrap"><table><thead><tr><th>Product</th><th>Primary vendor</th><th class="number">On hand</th><th class="number">Threshold</th><th>Action</th></tr></thead><tbody>
+@foreach (var p in Model.Data.Items) { <tr><td><a asp-page="/Products/Details" asp-route-id="@p.Id">@p.Name</a><small>@p.Sku</small></td><td>@p.PrimaryVendor.Name</td><td class="number">@p.QuantityOnHand</td><td class="number">@p.ReorderThreshold</td><td><a asp-page="/Restocks/Create" asp-route-vendorId="@p.PrimaryVendor.Id">Restock →</a></td></tr> }
+</tbody></table></div> }
+<partial name="_Pagination" model="new Pagination(Model.Data.Page, Model.Data.TotalPages, Model.Data.TotalCount)" /></div>

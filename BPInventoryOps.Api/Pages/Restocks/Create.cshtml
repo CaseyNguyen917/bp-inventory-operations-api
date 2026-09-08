@@ -1,0 +1,28 @@
+@page
+@model BPInventoryOps.Api.Pages.Restocks.CreateModel
+@{ ViewData["Title"] = "Receive a delivery"; }
+<div class="page-heading"><div><p class="eyebrow">Stock movement</p><h1>Receive a delivery</h1><p>Record everything received from one vendor. All lines are saved together.</p></div><a asp-page="Index">Delivery history</a></div>
+<form method="get" class="panel filters"><div class="field wide"><label for="vendorId">1. Choose vendor</label><select name="vendorId" id="vendorId" asp-items="Model.Vendors"><option value="">Choose an active vendor</option></select></div><button class="button secondary">Load vendor products</button></form>
+@if (Model.Input.VendorId > 0)
+{
+<div class="panel form-panel"><form method="post" class="panel-body">
+<h2>2. Delivery details</h2><p>Vendor: <strong>@Model.Vendors.FirstOrDefault(v => v.Value == Model.Input.VendorId.ToString())?.Text</strong>. Loading another vendor starts a new form.</p>
+<div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+<input type="hidden" asp-for="Input.VendorId" />
+<div class="form-grid"><div class="field"><label asp-for="Input.ReceivedAtUtc">Received at (UTC)</label><input asp-for="Input.ReceivedAtUtc" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" required /><small>Enter UTC, not local time.</small></div></div>
+<h2>3. Products received</h2><p class="muted">Use each product once. Quantities must be positive whole numbers.</p>
+<div id="restock-lines" class="stack">
+@for (int i = 0; i < Model.Input.Items.Count; i++)
+{
+    <div class="restock-line"><div class="field wide"><label asp-for="Input.Items[i].ProductId">Product</label><select asp-for="Input.Items[i].ProductId" asp-items="Model.Products" data-field="ProductId" required><option value="">Choose a product</option></select></div><div class="field"><label asp-for="Input.Items[i].QuantityReceived">Units received</label><input asp-for="Input.Items[i].QuantityReceived" type="number" min="1" step="1" data-field="QuantityReceived" required /></div><button class="button secondary remove-line" type="button" aria-label="Remove product line" hidden>Remove</button></div>
+}
+</div>
+<button id="add-line" class="button secondary" type="submit" asp-page-handler="AddLine" formnovalidate>Add another product</button>
+<div class="field"><label asp-for="Input.Notes">Delivery notes (optional)</label><textarea asp-for="Input.Notes" rows="3" maxlength="1000"></textarea></div>
+<div class="form-actions"><button class="button" type="submit">Record delivery</button><a class="button secondary" asp-page="Index">Cancel</a></div>
+</form></div>
+}
+else
+{
+    <div class="empty-state"><h2>Start with a vendor</h2><p>Only active products supplied by the selected vendor will be available.</p></div>
+}

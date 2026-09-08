@@ -1,0 +1,18 @@
+@page "{id:int?}"
+@model BPInventoryOps.Api.Pages.Vendors.EditModel
+@{ ViewData["Title"] = Model.Existing is null ? "Add vendor" : "Edit vendor"; }
+<div class="page-heading"><div><p class="eyebrow">Catalog management</p><h1>@ViewData["Title"]</h1><p>Changes are recorded in the audit history.</p></div></div>
+<div class="panel form-panel"><form method="post" class="panel-body">
+<div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+<div class="form-grid"><div class="field"><label asp-for="Input.Name">Name</label><input asp-for="Input.Name"  required /></div>
+<div class="field"><label asp-for="Input.ContactName">Contact name</label><input asp-for="Input.ContactName"   /></div>
+<div class="field"><label asp-for="Input.Phone">Phone</label><input asp-for="Input.Phone"   /></div>
+<div class="field"><label asp-for="Input.Email">Email</label><input asp-for="Input.Email" type="email"  /></div></div>
+<div class="form-actions"><button class="button" type="submit">Save vendor</button><a class="button secondary" asp-page="/Vendors/Index">Cancel</a></div>
+</form></div>
+@if (Model.Existing is { } existing)
+{
+    <section class="panel status-panel"><div><h2>@(existing.IsActive ? "Deactivate vendor" : "Reactivate vendor")</h2><p>Deactivation is blocked while active products reference this record. History is preserved.</p></div>
+    <form method="post" asp-page-handler="@(existing.IsActive ? "Deactivate" : "Reactivate")" asp-route-id="@existing.Id" data-confirm="Change this vendor's active status?"><button class="button @(existing.IsActive ? "danger" : "secondary")" type="submit">@(existing.IsActive ? "Deactivate" : "Reactivate")</button></form></section>
+}
+

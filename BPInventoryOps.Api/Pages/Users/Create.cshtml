@@ -1,0 +1,10 @@
+@page
+@model BPInventoryOps.Api.Pages.Users.CreateModel
+@{ ViewData["Title"] = "Add team member"; }
+<div class="page-heading"><div><p class="eyebrow">Administration</p><h1>Add team member</h1><p>Choose the least access this person needs.</p></div></div>
+<div class="panel form-panel"><form method="post" class="panel-body">
+<div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+<div class="form-grid"><div class="field"><label asp-for="Input.DisplayName">Display name</label><input asp-for="Input.DisplayName" required maxlength="120" autocomplete="name" /></div><div class="field"><label asp-for="Input.Email">Email</label><input asp-for="Input.Email" type="email" required autocomplete="email" /></div><div class="field"><label asp-for="Input.Role">Role</label><select asp-for="Input.Role"><option>Employee</option><option>Manager</option><option>Admin</option></select></div><div class="field"><label asp-for="Input.InitialPassword">Initial password</label><input asp-for="Input.InitialPassword" type="password" autocomplete="new-password" minlength="10" required /><small>At least 10 characters, with uppercase, lowercase, a number, and a symbol.</small></div></div>
+<p class="muted">Employees record stock movements. Managers also maintain the catalog and view audit history. Admins additionally manage accounts.</p>
+<div class="form-actions"><button class="button">Create account</button><a class="button secondary" asp-page="Index">Cancel</a></div>
+</form></div>

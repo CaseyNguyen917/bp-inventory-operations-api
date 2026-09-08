@@ -1,0 +1,11 @@
+@page
+@model BPInventoryOps.Api.Pages.Restocks.IndexModel
+@{ ViewData["Title"] = "Restocks"; }
+<div class="page-heading"><div><p class="eyebrow">Stock history</p><h1>Restocks</h1><p>Permanent records, newest first. All dates are UTC.</p></div><a class="button" asp-page="Create">Receive a delivery</a></div>
+<form method="get" class="panel filters"><div class="field wide"><label asp-for="Query.ProductId">Product</label><select asp-for="Query.ProductId" asp-items="Model.Products"><option value="">All products</option></select></div>
+<div class="field"><label asp-for="Query.VendorId">Vendor</label><select asp-for="Query.VendorId" asp-items="Model.Vendors"><option value="">All vendors</option></select></div>
+<div class="field"><label asp-for="Query.FromUtc">From (UTC)</label><input asp-for="Query.FromUtc" type="datetime-local" /></div><div class="field"><label asp-for="Query.ToUtc">Through (UTC)</label><input asp-for="Query.ToUtc" type="datetime-local" /></div><button class="button">Apply</button><a asp-page="Index">Reset</a></form>
+<div class="panel table-wrap"><table><thead><tr><th>Record</th><th>Vendor</th><th>Received (UTC)</th><th>Lines</th><th class="number">Units received</th></tr></thead><tbody>
+@foreach(var item in Model.Data.Items){<tr><td><a asp-page="Details" asp-route-id="@item.Id">#@item.Id</a></td><td>@item.Vendor.Name</td><td>@item.ReceivedAtUtc.ToString("dd MMM yyyy, HH:mm")</td><td>@item.ItemCount</td><td class="number">@item.TotalUnitsReceived</td></tr>}
+</tbody></table>@if(Model.Data.Items.Count==0){<div class="empty-state"><h2>No restocks found</h2><p>Clear your filters or record your first delivery.</p></div>}
+<partial name="_Pagination" model="new Pagination(Model.Data.Page, Model.Data.TotalPages, Model.Data.TotalCount)" /></div>

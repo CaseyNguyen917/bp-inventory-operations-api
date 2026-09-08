@@ -1,0 +1,13 @@
+@page
+@model BPInventoryOps.Api.Pages.Adjustments.CreateModel
+@{ ViewData["Title"] = "Adjust inventory"; }
+<div class="page-heading"><div><p class="eyebrow">Stock movement</p><h1>Adjust inventory</h1><p>Record damage, shrinkage, or a count correction with a clear reason.</p></div><a asp-page="Index">Adjustment history</a></div>
+<div class="panel form-panel"><form method="post" class="panel-body">
+<div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+<div class="form-grid"><div class="field span-2"><label asp-for="Input.ProductId">Product</label><select asp-for="Input.ProductId" asp-items="Model.Products" required><option value="">Choose an active product</option></select><small>Displayed stock is a snapshot. Availability is checked again when you save.</small></div>
+<div class="field"><label asp-for="Input.QuantityChange">Quantity change</label><input asp-for="Input.QuantityChange" type="number" step="1" required /><small>Use −2 to remove two units, or 2 to add two. Zero is not allowed.</small></div>
+<div class="field"><label asp-for="Input.Reason">Reason</label><select asp-for="Input.Reason" asp-items="Html.GetEnumSelectList<BPInventoryOps.Api.Enums.AdjustmentReason>()" required><option value="">Choose a reason</option></select></div>
+<div class="field span-2"><label asp-for="Input.Notes">Notes (optional)</label><textarea asp-for="Input.Notes" rows="4" maxlength="1000"></textarea></div></div>
+<p class="muted">Stock cannot fall below zero. Saved adjustments cannot be edited or deleted.</p>
+<div class="form-actions"><button class="button" type="submit">Record adjustment</button><a class="button secondary" asp-page="Index">Cancel</a></div>
+</form></div>

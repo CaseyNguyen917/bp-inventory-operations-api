@@ -1,0 +1,9 @@
+@page
+@model BPInventoryOps.Api.Pages.Users.IndexModel
+@{ ViewData["Title"] = "Team access"; }
+<div class="page-heading"><div><p class="eyebrow">Administration</p><h1>Team access</h1><p>Create accounts and manage store permissions.</p></div><a class="button" asp-page="Create">Add team member</a></div>
+<form method="get" class="panel filters"><div class="field wide"><label asp-for="Query.Search">Search name or email</label><input asp-for="Query.Search" /></div><div class="field"><label asp-for="Query.Role">Role</label><select asp-for="Query.Role"><option value="">All roles</option><option>Employee</option><option>Manager</option><option>Admin</option></select></div><label class="checkbox"><input asp-for="Query.IncludeInactive" /> Include inactive</label><button class="button">Apply</button><a asp-page="Index">Reset</a></form>
+<div class="panel table-wrap"><table><thead><tr><th>Team member</th><th>Role</th><th>Status</th><th>Created (UTC)</th></tr></thead><tbody>
+@foreach(var item in Model.Data.Items){<tr><td><a asp-page="Edit" asp-route-id="@item.Id">@item.DisplayName</a><small>@item.Email</small></td><td>@item.Role</td><td><span class="badge @(item.IsActive ? "" : "inactive")">@(item.IsActive ? "Active" : "Inactive")</span></td><td>@item.CreatedAtUtc.ToString("dd MMM yyyy")</td></tr>}
+</tbody></table>@if(Model.Data.Items.Count==0){<div class="empty-state"><h2>No matching team members</h2><p>Try another search or include inactive accounts.</p></div>}
+<partial name="_Pagination" model="new Pagination(Model.Data.Page, Model.Data.TotalPages, Model.Data.TotalCount)" /></div>

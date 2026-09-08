@@ -1,0 +1,5 @@
+@page "{id:int}"
+@model BPInventoryOps.Api.Pages.Audit.DetailsModel
+@{ ViewData["Title"] = $"Audit record #{Model.Item.Id}"; var item = Model.Item; }
+<div class="page-heading"><div><p class="eyebrow">Audit history</p><h1>@ViewData["Title"]</h1><p>@item.TimestampUtc.ToString("dd MMM yyyy, HH:mm:ss") UTC</p></div><a asp-page="Index">All audit records</a></div>
+<div class="panel panel-body"><div class="detail-grid"><div><small>Action</small><strong>@item.Action</strong></div><div><small>Actor</small><strong>@(item.User?.DisplayName ?? "System")</strong><small>@item.User?.Id</small></div><div><small>Entity</small><strong>@item.EntityType @item.EntityId</strong></div></div><h2>Recorded details</h2><pre class="notes">@(item.Details ?? "No additional details.")</pre><p class="muted">Audit records cannot be edited or deleted.</p></div>

@@ -1,0 +1,9 @@
+@page "{id}"
+@model BPInventoryOps.Api.Pages.Users.EditModel
+@{ ViewData["Title"] = "Manage team member"; }
+<div class="page-heading"><div><p class="eyebrow">Administration</p><h1>@Model.Item.DisplayName</h1><p>@Model.Item.Email · @(Model.Item.IsActive ? "Active" : "Inactive")</p></div><a asp-page="Index">All team members</a></div>
+<div class="panel form-panel"><form method="post" class="panel-body" data-confirm="Update this team member's role?"><h2>Access role</h2>
+<div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+<div class="field"><label asp-for="Input.Role">Role</label><select asp-for="Input.Role"><option>Employee</option><option>Manager</option><option>Admin</option></select></div>
+<p class="muted">The final active Admin cannot be demoted. Permission changes may require the user to sign in again.</p><div class="form-actions"><button class="button">Update role</button></div></form></div>
+<section class="panel status-panel"><div><h2>@(Model.Item.IsActive ? "Deactivate account" : "Reactivate account")</h2><p>History is preserved. You cannot deactivate yourself or the final active Admin.</p></div><form method="post" asp-page-handler="@(Model.Item.IsActive ? "Deactivate" : "Reactivate")" asp-route-id="@Model.Item.Id" data-confirm="Change this account's active status?"><button class="button @(Model.Item.IsActive ? "danger" : "secondary")">@(Model.Item.IsActive ? "Deactivate" : "Reactivate")</button></form></section>

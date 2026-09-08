@@ -56,6 +56,17 @@ public sealed class ApiExceptionHandler(
 
         httpContext.Response.StatusCode = status;
 
+        // Exception middleware clears the current endpoint; use the original endpoint
+        // to distinguish HTML pages from API ProblemDetails responses.
+        var endpoint = httpContext.Features.Get<IExceptionHandlerFeature>()?.Endpoint
+            ?? httpContext.GetEndpoint();
+        if (endpoint?.Metadata.GetMetadata<Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor>() is not null)
+        {
+            string reference = Uri.EscapeDataString(httpContext.TraceIdentifier);
+            httpContext.Response.Redirect($"{httpContext.Request.PathBase}/Error?code={status}&reference={reference}");
+            return true;
+        }
+
         ProblemDetails problemDetails = new()
         {
             Status = status,

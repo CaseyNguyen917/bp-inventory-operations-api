@@ -1,0 +1,11 @@
+@page "{id:int}"
+@model BPInventoryOps.Api.Pages.Products.DetailsModel
+@{ var p = Model.Product; ViewData["Title"] = p.Name; bool manager = User.IsInRole(ApplicationRoles.Manager) || User.IsInRole(ApplicationRoles.Admin); }
+<div class="page-heading"><div><p class="eyebrow">PRODUCT · @p.Sku</p><h1>@p.Name</h1><p>@p.Category.Name · @p.PrimaryVendor.Name</p></div>
+@if (manager) { <a class="button" asp-page="Edit" asp-route-id="@p.Id">Manage product</a> }</div>
+<div class="stats"><div class="panel stat"><p>ON HAND</p><strong>@p.QuantityOnHand</strong><span>Units in inventory</span></div><div class="panel stat"><p>REORDER THRESHOLD</p><strong>@p.ReorderThreshold</strong><span>Low stock includes equality</span></div><div class="panel stat"><p>RETAIL PRICE</p><strong>$@p.RetailPrice.ToString("N2")</strong><span>Cost: $@p.Cost.ToString("N2")</span></div></div>
+<section class="panel panel-body"><dl class="detail-grid"><div><dt>Status</dt><dd>@(p.IsActive ? "Active" : "Inactive")</dd></div><div><dt>Created (UTC)</dt><dd>@p.CreatedAtUtc.ToString("MMM d, yyyy HH:mm")</dd></div><div><dt>Updated (UTC)</dt><dd>@p.UpdatedAtUtc.ToString("MMM d, yyyy HH:mm")</dd></div></dl>
+<div class="form-actions">
+@if (p.IsActive) { <a class="button" asp-page="/Restocks/Create" asp-route-vendorId="@p.PrimaryVendor.Id">Record restock</a><a class="button secondary" asp-page="/Adjustments/Create" asp-route-productId="@p.Id">Adjust stock</a> }
+<a asp-page="/Restocks/Index" asp-route-Query.ProductId="@p.Id">Restock history</a><a asp-page="/Adjustments/Index" asp-route-Query.ProductId="@p.Id">Adjustment history</a>
+</div></section>

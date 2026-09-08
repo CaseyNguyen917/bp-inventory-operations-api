@@ -1,10 +1,10 @@
 # BP Franchise Inventory & Operations Management System
 
-An ASP.NET Core backend for the back-office inventory operations of a
+An ASP.NET Core application for the back-office inventory operations of a
 single-location convenience store. The project is inspired by the operational
 needs of a real independently owned BP franchise, while the repository and
 public Azure deployment use synthetic demonstration data only. It provides a
-complete API for merchandise catalogs, current stock, deliveries, accountable
+Razor Pages workspace and an API for merchandise catalogs, current stock, deliveries, accountable
 inventory adjustments, low-stock reporting, audit history, and role-based user
 administration.
 
@@ -20,6 +20,7 @@ change.
 ## Technology stack
 
 - C# and ASP.NET Core Web API on .NET 10
+- Server-rendered Razor Pages, responsive CSS, and a small amount of vanilla JavaScript
 - Entity Framework Core 10 and SQL Server
 - ASP.NET Core Identity with secure cookie authentication
 - xUnit and `WebApplicationFactory` integration tests
@@ -30,20 +31,23 @@ change.
 
 ## Architecture
 
-The application is a modular monolith with one deployable API and one relational
-database. Controllers stay at the HTTP boundary, scoped services own business
+The application is a modular monolith with one deployable web application and one relational
+database. Controllers and Razor PageModels stay at the HTTP boundary; scoped services own business
 rules and transaction orchestration, and services use `ApplicationDbContext`
 directly.
 
 ```mermaid
 flowchart LR
-    Client[Browser or API client] --> Controller[ASP.NET Core Controllers]
+    Client[API client] --> Controller[ASP.NET Core Controllers]
+    Browser[Browser] --> Pages[Razor Pages]
+    Pages --> Service
     Controller --> Service[Scoped Business Services]
     Service --> DbContext[ApplicationDbContext]
     DbContext --> EF[Entity Framework Core]
     EF --> Database[(SQL Server / Azure SQL)]
 
     Identity[Identity + Role Policies] -. protects .-> Controller
+    Identity -. protects .-> Pages
     Problems[ProblemDetails + Exception Handler] -. standardizes .-> Controller
     Service -. writes business history .-> Audit[(AuditLog)]
     Telemetry[Logging + OpenTelemetry] -. observes .-> Controller
@@ -54,6 +58,7 @@ Request flow:
 
 ```text
 Controllers → Services → ApplicationDbContext → EF Core → SQL Server
+Razor Pages → Services → ApplicationDbContext → EF Core → SQL Server
 ```
 
 See the detailed [application architecture](docs/architechture/architecture.md)
@@ -61,6 +66,7 @@ and [request lifecycle](docs/architechture/request-lifecycle.md).
 
 ## Core features
 
+- Responsive browser workspace with dashboard, role-aware navigation, and validated forms
 - Category and Vendor create, read, update, soft deactivation, and reactivation
 - Product management with search, filters, pagination, and allow-listed sorting
 - Active-only low-stock reporting using
@@ -97,8 +103,9 @@ AuditLog together. Any failure rolls back the complete operation.
 | View AuditLog | No | Yes | Yes |
 | Manage users and roles | No | No | Yes |
 
-Authentication uses Secure, HttpOnly, SameSite Strict cookies. Unsafe requests
-also require the `X-CSRF-TOKEN` antiforgery header. The API derives audit actor
+Authentication uses Secure, HttpOnly, SameSite Strict cookies. Unsafe API requests
+also require antiforgery validation, conventionally using the `X-CSRF-TOKEN` header.
+Razor Pages forms include hidden antiforgery tokens automatically. The application derives audit actor
 identity from the authenticated server context; business request bodies never
 accept an actor user ID.
 
@@ -174,6 +181,29 @@ erDiagram
 
 The full schema is documented in the [ER diagram](docs/database/er-diagram.md)
 and [data dictionary](docs/database/data-dictionary.md).
+
+## Browser workspace
+
+Open `https://localhost:7104/` while running the HTTPS launch profile. Sign in
+with an existing account; the demo accounts below work once local seeding has
+been enabled with your own passwords.
+
+- **Overview:** active-product count, low-stock alerts, recent deliveries, and quick actions.
+- **Products / Categories / Vendors:** searchable catalogs; Manager/Admin editing and status controls.
+- **Low stock:** active products at or below their reorder threshold.
+- **Restocks:** vendor-specific, multi-product delivery entry and permanent history.
+- **Adjustments:** signed quantity changes with reasons and negative-stock protection.
+- **Audit history:** Manager/Admin read-only activity records and filters.
+- **Team access:** Admin account creation, role changes, and activation controls.
+- **Account:** password change and sign out.
+
+The frontend runs in the existing ASP.NET Core project and uses the same services,
+Identity cookies, and database. There is no Node build, separate frontend server,
+new Azure resource, or schema migration. Dates and delivery-time inputs are explicitly
+UTC. See [frontend architecture and verification](docs/frontend/razor-pages.md).
+
+The frontend is implemented locally; the existing Azure deployment needs a new
+publish/deploy before these pages are available there.
 
 ## API overview
 
@@ -265,6 +295,10 @@ https://localhost:7104
 http://localhost:5203
 ```
 
+Use **HTTPS** for the browser workspace: authentication and antiforgery cookies
+are intentionally Secure. If the local certificate is not trusted, run
+`dotnet dev-certs https --trust` in Windows PowerShell and reopen the browser.
+
 ## Testing
 
 The test suite exercises the real ASP.NET Core pipeline with
@@ -282,12 +316,15 @@ dotnet test BPInventoryOps.slnx --configuration Release
 Current verified result:
 
 ```text
-11 passed, 0 failed, 0 skipped
+19 passed, 0 failed, 0 skipped
 ```
 
 Coverage focuses on catalog rules, soft deactivation, query behavior, low-stock
 boundaries, Restock atomicity, Adjustment integrity, audit attribution,
 authentication/authorization, user administration, and safe health responses.
+Eight additional Razor Pages tests exercise real HTML form tokens, browser redirects,
+role-protected GET/POST routes, multi-line delivery binding, quantity preservation,
+negative-stock rejection, password non-disclosure, and HTML escaping.
 See the [testing strategy](docs/testing/testing-strategy.md).
 
 ## Azure deployment
@@ -353,9 +390,10 @@ Additional rationale is available in the [architecture decisions](docs/architech
 
 ## Demo evidence
 
-There is intentionally no frontend or invented UI screenshot. The project is a
-backend demonstration, with evidence provided by:
+The project includes a working Razor Pages frontend. Verification evidence includes:
 
+- desktop/mobile browser checks using a disposable SQL database;
+- automated Razor Pages form-workflow and authorization tests;
 - the Development OpenAPI document;
 - automated API integration tests;
 - the live readiness endpoint when the Free App Service is running;
@@ -374,11 +412,11 @@ The MVP deliberately excludes:
 - purchase orders, vendor invoicing, accounting, payroll, and scheduling
 - barcode hardware, mobile applications, and AI forecasting
 - microservices, Redis, message queues, Kubernetes, and Terraform
-- a production frontend
+- a separate SPA, public self-registration, and frontend hosting infrastructure
 - automated Azure CI/CD
 
 These exclusions keep the project focused on a secure, transactional,
-well-tested inventory backend rather than presenting unimplemented features as
+well-tested inventory application rather than presenting unimplemented features as
 complete.
 
 ## Documentation

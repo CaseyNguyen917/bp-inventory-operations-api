@@ -8,10 +8,12 @@ using BPInventoryOps.Api.Enums;
 using BPInventoryOps.Api.Entities;
 using BPInventoryOps.Api.Exceptions;
 using BPInventoryOps.Api.Health;
+using BPInventoryOps.Api.Pages.Shared;
 using BPInventoryOps.Api.Services;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -36,6 +38,19 @@ builder.Services.AddControllers(options =>
                 namingPolicy: null,
                 allowIntegerValues: false)));
 builder.Services.AddOpenApi();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/", AuthorizationPolicies.EmployeeOrAbove);
+    options.Conventions.AllowAnonymousToPage("/Account/Login");
+    options.Conventions.AllowAnonymousToPage("/Error");
+    options.Conventions.AllowAnonymousToPage("/Account/AccessDenied");
+    options.Conventions.AuthorizePage("/Products/Edit", AuthorizationPolicies.ManagerOrAbove);
+    options.Conventions.AuthorizePage("/Categories/Edit", AuthorizationPolicies.ManagerOrAbove);
+    options.Conventions.AuthorizePage("/Vendors/Edit", AuthorizationPolicies.ManagerOrAbove);
+    options.Conventions.AuthorizeFolder("/Audit", AuthorizationPolicies.ManagerOrAbove);
+    options.Conventions.AuthorizeFolder("/Users", AuthorizationPolicies.AdminOnly);
+});
+builder.Services.AddScoped<PageLookups>();
 builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>
@@ -91,9 +106,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = false;
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
 
     options.Events.OnRedirectToLogin = context =>
     {
+        if (context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<PageActionDescriptor>() is not null)
+        {
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        }
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         ProblemDetails problemDetails = new()
         {
@@ -113,6 +135,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 
     options.Events.OnRedirectToAccessDenied = context =>
     {
+        if (context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<PageActionDescriptor>() is not null)
+        {
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        }
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
         ProblemDetails problemDetails = new()
         {
@@ -193,11 +220,25 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.Use(async (context, next) =>
+{
+    if (context.GetEndpoint()?.Metadata.GetMetadata<PageActionDescriptor>() is not null)
+    {
+        context.Response.Headers.CacheControl = "no-cache, no-store";
+        context.Response.Headers.Pragma = "no-cache";
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        context.Response.Headers["X-Frame-Options"] = "DENY";
+        context.Response.Headers["Referrer-Policy"] = "same-origin";
+    }
+    await next(context);
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {

@@ -1,0 +1,4 @@
+@page
+@model BPInventoryOps.Api.Pages.ErrorModel
+@{ ViewData["Title"] = "Unable to complete request"; }
+<section class="empty-state"><p class="eyebrow">@Model.Status · REQUEST NOT COMPLETED</p><h1>@Model.Heading</h1><p>@Model.Explanation</p><p class="hint">If you submitted a delivery or adjustment, check its history before trying again.</p><a class="button" asp-page="/Index">Return to overview</a><p class="hint">Reference: @Model.Reference</p></section>

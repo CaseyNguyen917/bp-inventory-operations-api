@@ -1,0 +1,26 @@
+@page
+@model BPInventoryOps.Api.Pages.Account.LoginModel
+@{ ViewData["Title"] = "Sign in"; }
+<div class="login-grid">
+    <section class="login-story">
+        <a class="brand" asp-page="/Index"><span class="brand-mark">bp<span>•</span></span><span>Inventory <small>STORE OPERATIONS</small></span></a>
+        <p class="eyebrow">EVERY ITEM. ACCOUNTED FOR.</p>
+        <h1>A clearer picture<br />of your store.</h1>
+        <p>Keep stock in view, receive deliveries, and give every inventory change a reason.</p>
+        <div class="story-note"><span class="demo-dot"></span> Single location · One shared workspace</div>
+    </section>
+    <section class="login-form">
+        <p class="eyebrow">WELCOME BACK</p><h2>Sign in to your workspace</h2>
+        <p class="muted">Use the account provided by your administrator.</p>
+        <form method="post">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="All" role="alert"></div>
+            <label asp-for="Input.Email">Email address</label>
+            <input asp-for="Input.Email" type="email" autocomplete="username" required autofocus />
+            <label asp-for="Input.Password">Password</label>
+            <input asp-for="Input.Password" type="password" autocomplete="current-password" required />
+            <button class="button full">Sign in</button>
+        </form>
+        <p class="hint">Demo accounts use privately supplied passwords. Contact the project owner for access.</p>
+    </section>
+</div>

@@ -1,0 +1,55 @@
+@{
+    bool signedIn = User.Identity?.IsAuthenticated == true;
+    bool manager = User.IsInRole(ApplicationRoles.Manager) || User.IsInRole(ApplicationRoles.Admin);
+    string path = Context.Request.Path;
+    string Active(string prefix) => (prefix == "/" ? path == "/" : path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · BP Inventory</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+</head>
+<body class="@(signedIn ? "workspace" : "guest")">
+<a class="skip-link" href="#main">Skip to content</a>
+@if (signedIn)
+{
+    <aside class="sidebar">
+        <a class="brand" asp-page="/Index"><span class="brand-mark">bp<span>•</span></span><span>Inventory <small>STORE OPERATIONS</small></span></a>
+        <p class="nav-label">WORKSPACE</p>
+        <nav aria-label="Main navigation">
+            <a class="@Active("/")" asp-page="/Index">Overview</a>
+            <a class="@Active("/Products")" asp-page="/Products/Index">Products</a>
+            <a class="@Active("/LowStock")" asp-page="/LowStock">Low stock</a>
+            <a class="@Active("/Restocks")" asp-page="/Restocks/Index">Restocks</a>
+            <a class="@Active("/Adjustments")" asp-page="/Adjustments/Index">Adjustments</a>
+            <a class="@Active("/Categories")" asp-page="/Categories/Index">Categories</a>
+            <a class="@Active("/Vendors")" asp-page="/Vendors/Index">Vendors</a>
+            @if (manager) { <a class="@Active("/Audit")" asp-page="/Audit/Index">Audit history</a> }
+            @if (User.IsInRole(ApplicationRoles.Admin)) { <a class="@Active("/Users")" asp-page="/Users/Index">Team access</a> }
+        </nav>
+        <div class="sidebar-footer"><span class="demo-dot"></span> Portfolio demo <small>Synthetic store data</small></div>
+    </aside>
+}
+<div class="main-shell">
+    @if (signedIn)
+    {
+        <header class="topbar">
+            <span>Single-store workspace</span>
+            <div class="actions">
+                <a asp-page="/Account/Password" class="account-link">@User.FindFirst(ApplicationClaimTypes.DisplayName)?.Value <small>@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</small></a>
+                <form method="post" asp-page="/Account/Logout"><button class="button secondary small">Sign out</button></form>
+            </div>
+        </header>
+    }
+    <main id="main" tabindex="-1">
+        @if (TempData["Notice"] is string notice) { <div class="notice" role="status">@notice</div> }
+        @RenderBody()
+    </main>
+    <footer class="footer">BP Inventory &amp; Operations · Independent portfolio project · Synthetic demonstration data</footer>
+</div>
+</body>
+</html>

@@ -9,6 +9,11 @@ public sealed class ApiAntiforgeryFilter(IAntiforgery antiforgery)
 {
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
+        // Razor Pages validates its own form tokens. Keep this JSON filter API-only.
+        if (context.ActionDescriptor is Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor)
+        {
+            return;
+        }
         HttpRequest request = context.HttpContext.Request;
 
         if (HttpMethods.IsGet(request.Method)

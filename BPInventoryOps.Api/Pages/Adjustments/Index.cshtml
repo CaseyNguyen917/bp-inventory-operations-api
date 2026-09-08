@@ -1,0 +1,11 @@
+@page
+@model BPInventoryOps.Api.Pages.Adjustments.IndexModel
+@{ ViewData["Title"] = "Adjustments"; }
+<div class="page-heading"><div><p class="eyebrow">Stock history</p><h1>Adjustments</h1><p>Permanent records, newest first. All dates are UTC.</p></div><a class="button" asp-page="Create">Adjust inventory</a></div>
+<form method="get" class="panel filters"><div class="field wide"><label asp-for="Query.ProductId">Product</label><select asp-for="Query.ProductId" asp-items="Model.Products"><option value="">All products</option></select></div>
+<div class="field"><label asp-for="Query.Reason">Reason</label><select asp-for="Query.Reason" asp-items="Html.GetEnumSelectList<BPInventoryOps.Api.Enums.AdjustmentReason>()"><option value="">All reasons</option></select></div>
+<div class="field"><label asp-for="Query.FromUtc">From (UTC)</label><input asp-for="Query.FromUtc" type="datetime-local" /></div><div class="field"><label asp-for="Query.ToUtc">Through (UTC)</label><input asp-for="Query.ToUtc" type="datetime-local" /></div><button class="button">Apply</button><a asp-page="Index">Reset</a></form>
+<div class="panel table-wrap"><table><thead><tr><th>Record</th><th>Product</th><th>Recorded (UTC)</th><th>Reason</th><th class="number">Change</th></tr></thead><tbody>
+@foreach(var item in Model.Data.Items){<tr><td><a asp-page="Details" asp-route-id="@item.Id">#@item.Id</a></td><td>@item.Product.Name</td><td>@item.RecordedAtUtc.ToString("dd MMM yyyy, HH:mm")</td><td>@item.Reason</td><td class="number">@item.QuantityChange.ToString("+0;-0;0")</td></tr>}
+</tbody></table>@if(Model.Data.Items.Count==0){<div class="empty-state"><h2>No adjustments found</h2><p>Clear your filters or record your first adjustment.</p></div>}
+<partial name="_Pagination" model="new Pagination(Model.Data.Page, Model.Data.TotalPages, Model.Data.TotalCount)" /></div>

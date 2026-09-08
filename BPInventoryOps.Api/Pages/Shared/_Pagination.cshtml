@@ -1,0 +1,17 @@
+@model Pagination
+@using Microsoft.AspNetCore.WebUtilities
+@{
+    string PageUrl(int page)
+    {
+        var query = Context.Request.Query.ToDictionary(x => x.Key, x => (string?)x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+        query[Model.PageKey] = page.ToString();
+        return QueryHelpers.AddQueryString(Context.Request.PathBase + Context.Request.Path, query);
+    }
+}
+<nav class="pagination" aria-label="Result pages">
+    <span>@Model.TotalCount records · Page @Model.Page of @Math.Max(1, Model.TotalPages)</span>
+    <div class="actions">
+        @if (Model.Page > 1) { <a class="button secondary" href="@PageUrl(Model.Page - 1)">Previous</a> }
+        @if (Model.Page < Model.TotalPages) { <a class="button secondary" href="@PageUrl(Model.Page + 1)">Next</a> }
+    </div>
+</nav>

@@ -1,0 +1,30 @@
+@page
+@model BPInventoryOps.Api.Pages.IndexModel
+@{ ViewData["Title"] = "Overview"; }
+<div class="page-heading"><div><p class="eyebrow">YOUR STORE AT A GLANCE</p><h1>Inventory overview</h1><p>A clear view of what's on hand and what needs attention.</p></div><a class="button" asp-page="/Restocks/Create">+ Record a restock</a></div>
+<div class="stats">
+<a class="panel stat" asp-page="/Products/Index"><p>ACTIVE PRODUCTS</p><strong>@Model.ProductCount</strong><span>In your merchandise catalog ↗</span></a>
+<a class="panel stat attention" asp-page="/LowStock"><p>NEEDS RESTOCKING</p><strong>@Model.LowCount</strong><span>At or below reorder threshold ↗</span></a>
+<a class="panel stat" asp-page="/Restocks/Index"><p>RECORDED DELIVERIES</p><strong>@Model.RestockCount</strong><span>Complete restock history ↗</span></a>
+</div>
+<div class="dashboard-grid">
+<section class="panel"><div class="panel-head"><h2>Stock needing attention</h2><a asp-page="/LowStock">View all</a></div>
+@if (Model.LowStock.Count == 0) { <div class="empty-state"><h2>Nothing on the low-stock list.</h2><p>Active products at or below their reorder threshold will appear here.</p></div> }
+else {
+<div class="table-wrap"><table><thead><tr><th>Product</th><th class="number">On hand</th><th class="number">Threshold</th><th>Status</th></tr></thead><tbody>
+@foreach (var p in Model.LowStock) { <tr><td><a asp-page="/Products/Details" asp-route-id="@p.Id">@p.Name</a><small>@p.Sku</small></td><td class="number">@p.QuantityOnHand</td><td class="number">@p.ReorderThreshold</td><td><span class="badge low">Low stock</span></td></tr> }
+</tbody></table></div>
+}
+</section>
+<section class="panel"><div class="panel-head"><h2>Daily operations</h2></div>
+<a class="quick-action" asp-page="/Restocks/Create"><strong>Receive a delivery ↗</strong><span>Record merchandise arriving from a vendor.</span></a>
+<a class="quick-action" asp-page="/Adjustments/Create"><strong>Adjust inventory ↗</strong><span>Account for damage, loss, or a physical count.</span></a>
+<a class="quick-action" asp-page="/Products/Index"><strong>Browse your catalog ↗</strong><span>Find products, suppliers, and stock levels.</span></a>
+</section>
+</div>
+<section class="panel" style="margin-top:24px"><div class="panel-head"><h2>Recent deliveries</h2><a asp-page="/Restocks/Index">View history</a></div>
+@if (Model.RecentRestocks.Count == 0) { <div class="empty-state"><p>No deliveries recorded yet. Record a restock to get started.</p></div> }
+else { <div class="table-wrap"><table><thead><tr><th>Delivery</th><th>Vendor</th><th>Received (UTC)</th><th class="number">Units</th></tr></thead><tbody>
+@foreach (var r in Model.RecentRestocks) { <tr><td><a asp-page="/Restocks/Details" asp-route-id="@r.Id">Restock #@r.Id</a></td><td>@r.Vendor.Name</td><td>@r.ReceivedAtUtc.ToString("MMM d, yyyy HH:mm")</td><td class="number">@r.TotalUnitsReceived</td></tr> }
+</tbody></table></div> }
+</section>
